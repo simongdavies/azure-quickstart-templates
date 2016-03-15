@@ -403,7 +403,7 @@
       {
          "name":"CreatingStorageAccounts",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "properties":{
             "mode":"Incremental",
             "templateLink":{
@@ -426,7 +426,7 @@
       {
          "name":"SettingUpRdp",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "properties":{
             "mode":"Incremental",
             "templateLink":{
@@ -461,7 +461,7 @@
       {
          "name":"SettingUpSharepointWebPublicIP",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "properties":{
             "mode":"Incremental",
             "templateLink":{
@@ -490,7 +490,7 @@
       {
          "name":"SettingUpSharepointCentralAdminPublicIP",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "properties":{
             "mode":"Incremental",
             "templateLink":{
@@ -519,7 +519,7 @@
       {
          "name":"CreatingAvailabilitySets",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "properties":{
             "mode":"Incremental",
             "templateLink":{
@@ -548,7 +548,7 @@
       {
          "name":"CreatingVirtualNetwork",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "properties":{
             "mode":"Incremental",
             "templateLink":{
@@ -574,7 +574,7 @@
       {
          "name":"SettingUpLoadBalancers",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "dependsOn":[
             "Microsoft.Resources/deployments/SettingUpSharepointCentralAdminPublicIP",
             "Microsoft.Resources/deployments/SettingUpSharepointWebPublicIP",
@@ -666,7 +666,7 @@
       {
          "name":"CreatingNetworkInterfaces",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "dependsOn":[
             "Microsoft.Resources/deployments/CreatingVirtualNetwork",
             "Microsoft.Resources/deployments/SettingUpRdp",
@@ -742,7 +742,7 @@
       {
          "name":"ProvisioningPrimaryADDomainController",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "dependsOn":[
             "Microsoft.Resources/deployments/CreatingStorageAccounts",
             "Microsoft.Resources/deployments/CreatingNetworkInterfaces",
@@ -807,7 +807,7 @@
       {
          "name":"UpdatingDNStoPrimaryADVM",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "dependsOn":[
             "Microsoft.Resources/deployments/ProvisioningPrimaryADDomainController"
          ],
@@ -841,7 +841,7 @@
       {
          "name":"ProvisioningBackupADDomainController",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "dependsOn":[
             "Microsoft.Resources/deployments/CreatingStorageAccounts",
             "Microsoft.Resources/deployments/CreatingNetworkInterfaces",
@@ -905,7 +905,7 @@
       {
          "name":"ConfiguringBackupADDomainController",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "dependsOn":[
             "Microsoft.Resources/deployments/ProvisioningBackupADDomainController",
             "Microsoft.Resources/deployments/UpdatingDNStoPrimaryADVM"
@@ -944,7 +944,7 @@
       {
          "name":"UpdatingDNSwithBackupADVM",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "dependsOn":[
             "Microsoft.Resources/deployments/ConfiguringBackupADDomainController"
          ],
@@ -979,7 +979,7 @@
       {
          "name":"ProvisioningSQLVirtualMachines",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "dependsOn":[
             "Microsoft.Resources/deployments/CreatingStorageAccounts",
             "Microsoft.Resources/deployments/CreatingNetworkInterfaces",
@@ -1076,7 +1076,7 @@
       {
          "name":"ConfiguringSQLAlwaysOnCluster",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "dependsOn":[
             "Microsoft.Resources/deployments/UpdatingDNSwithBackupADVM",
             "Microsoft.Resources/deployments/ProvisioningSQLVirtualMachines"
@@ -1166,7 +1166,7 @@
       {
          "name":"CreatingSharepointVirtualMachines",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "dependsOn":[
             "Microsoft.Resources/deployments/CreatingStorageAccounts",
             "Microsoft.Resources/deployments/CreatingNetworkInterfaces",
@@ -1236,7 +1236,7 @@
       {
          "name":"ConfiguringSharepoint",
          "type":"Microsoft.Resources/deployments",
-         "apiVersion":"2015-01-01",
+         "apiVersion":"2015-11-01",
          "dependsOn":[
             "Microsoft.Resources/deployments/ConfiguringSQLAlwaysOnCluster",
             "Microsoft.Resources/deployments/CreatingSharepointVirtualMachines"
