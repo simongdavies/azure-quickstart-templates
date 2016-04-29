@@ -89,9 +89,9 @@
     },
     "virtualNetworkRGName": {
       "type": "string",
-      "defaultValue": "[resourceGroup().Name]",
+      "defaultValue": "",
       "metadata": {
-        "description": "Resource Group Name for Vnet. For new VNet, use the same resource group for the cluster. O stherwise, type in existing resource group name"
+        "description": "Resource Group Name for Vnet. For new VNet, leave empty otherwise, type in existing resource group name"
       }
     },
     "subnetName": {
@@ -239,6 +239,9 @@
     "templateAPIVersion":"2015-11-01",
     "resourceAPIVersion":"2015-06-15",
     "installCDH":"True",
+    "newvirtualNetworkRGName":"[parameters('virtualNetworkRGName')]",
+    "existingvirtualNetworkRGName":"[resourceGroup().Name]",
+    "virtualNetworkRGName":"[variables(concat(parameters('vnetNewOrExisting'),'virtualNetworkRGName'))]",
     "addressPrefix":"[parameters('addressPrefix')]",
     "subnetPrefix":"[parameters('subnetPrefix')]",
     "scriptsUri": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/cloudera-on-centos",
@@ -281,7 +284,7 @@
       "masterIP":"[variables('sa')]",
       "workerIP":"[concat(variables('ipOctet01'), add(variables('ipOctet2'), div(variables('datanodeIpOctet3'), 255)), '.', mod(variables('datanodeIpOctet3'), 255))]",
       "virtualNetworkName": "[parameters('virtualNetworkName')]",
-      "virtualNetworkRGName":"[parameters('virtualNetworkRGName')]",
+      "virtualNetworkRGName":"[variables('virtualNetworkRGName')]",
       "vnetNewOrExisting": "[parameters('vnetNewOrExisting')]",
       "virtualNetworkSubnetName": "[parameters('subnetName')]"
     },
