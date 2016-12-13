@@ -75,7 +75,8 @@
       "type": "string",
       "metadata": {
         "group": "Infrastructure settings",
-        "description": "Change this value to your repo name if deploying from a fork"
+        "description": "Change this value to your repo name if deploying from a fork",
+        "artifactsBaseUrl":""
       },
       "defaultValue": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/sharepoint-server-farm-ha"
     },
