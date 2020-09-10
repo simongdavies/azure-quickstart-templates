@@ -9,24 +9,29 @@
         [Parameter(Mandatory)]
         [String]$DPMPName,
         [Parameter(Mandatory)]
-        [String]$ClientName,
+        [String]$CSName,
         [Parameter(Mandatory)]
         [String]$PSName,
+        [Parameter(Mandatory)]
+        [String]$ClientName,
+        [Parameter(Mandatory)]
+        [String]$Configuration,
         [Parameter(Mandatory)]
         [String]$DNSIPAddress,
         [Parameter(Mandatory)]
         [System.Management.Automation.PSCredential]$Admincreds
     )
-    Import-DscResource -ModuleName xActiveDirectory
-    Import-DscResource -ModuleName NetworkingDsc
+
     Import-DscResource -ModuleName TemplateHelpDSC
-    Import-DscResource -ModuleName xSmbShare
-    Import-DscResource -ModuleName ComputerManagementDsc
 
     $LogFolder = "TempLog"
     $LogPath = "c:\$LogFolder"
     $CM = "CMCB"
     $DName = $DomainName.Split(".")[0]
+    if($Configuration -ne "Standalone")
+    {
+        $CSComputerAccount = "$DName\$CSName$"
+    }
     $PSComputerAccount = "$DName\$PSName$"
     $DPMPComputerAccount = "$DName\$DPMPName$"
     $ClientComputerAccount = "$DName\$ClientName$"
@@ -41,80 +46,148 @@
             RebootNodeIfNeeded = $true
         }
 
-        File ADFiles
-        {            
-            DestinationPath = 'C:\Windows\NTDS'            
-            Type = 'Directory'            
-            Ensure = 'Present'
-        }
-
-        WindowsFeature Rdc
-        {             
-            Ensure = "Present"             
-            Name = "Rdc"
-            DependsOn = "[File]ADFiles"
-        }
-
-		WindowsFeature ADDSInstall             
-        {             
-            Ensure = "Present"             
-            Name = "AD-Domain-Services"             
-        }         
-
-		WindowsFeature ADTools
+        SetCustomPagingFile PagingSettings
         {
-            Ensure = "Present"
-            Name = "RSAT-AD-Tools"
+            Drive       = 'C:'
+            InitialSize = '8192'
+            MaximumSize = '8192'
+        }
+
+        InstallFeatureForSCCM InstallFeature
+        {
+            Name = 'DC'
+            Role = 'DC'
+            DependsOn = "[SetCustomPagingFile]PagingSettings"
         }
         
-        xADDomain FirstDS
+        SetupDomain FirstDS
         {
-            DomainName = $DomainName
-            DomainAdministratorCredential = $DomainCreds
+            DomainFullName = $DomainName
             SafemodeAdministratorPassword = $DomainCreds
-            DatabasePath = "C:\Windows\NTDS"
-            LogPath = "C:\Windows\NTDS"
-            SysvolPath = "C:\Windows\SYSVOL"
-            DependsOn = @("[WindowsFeature]ADDSInstall","[File]ADFiles")
+            DependsOn = "[InstallFeatureForSCCM]InstallFeature"
+        }
+
+        InstallCA InstallCA
+        {
+            HashAlgorithm = "SHA256"
+            DependsOn = "[SetupDomain]FirstDS"
         }
 
         VerifyComputerJoinDomain WaitForPS
         {
             ComputerName = $PSName
             Ensure = "Present"
-            DependsOn = "[xADDomain]FirstDS"
+            DependsOn = "[InstallCA]InstallCA"
         }
 
         VerifyComputerJoinDomain WaitForDPMP
         {
             ComputerName = $DPMPName
             Ensure = "Present"
-            DependsOn = "[xADDomain]FirstDS"
+            DependsOn = "[InstallCA]InstallCA"
         }
 
         VerifyComputerJoinDomain WaitForClient
         {
             ComputerName = $ClientName
             Ensure = "Present"
-            DependsOn = "[xADDomain]FirstDS"
+            DependsOn = "[InstallCA]InstallCA"
         }
 
-        File ShareFolder
-        {            
-            DestinationPath = $LogPath     
-            Type = 'Directory'            
-            Ensure = 'Present'
-            DependsOn = @("[VerifyComputerJoinDomain]WaitForPS","[VerifyComputerJoinDomain]WaitForDPMP","[VerifyComputerJoinDomain]WaitForClient")
-        }
+        if ($Configuration -eq 'Standalone') {
+            File ShareFolder
+            {            
+                DestinationPath = $LogPath     
+                Type = 'Directory'            
+                Ensure = 'Present'
+                DependsOn = @("[VerifyComputerJoinDomain]WaitForPS","[VerifyComputerJoinDomain]WaitForDPMP","[VerifyComputerJoinDomain]WaitForClient")
+            }
 
-        xSmbShare DomainSMBShare
-        {
-            Ensure = "Present"
-            Name   = $LogFolder
-            Path =  $LogPath
-            ReadAccess = @($PSComputerAccount,$DPMPComputerAccount,$ClientComputerAccount)
-            Description = "This is a test SMB Share"
-            DependsOn = "[File]ShareFolder"
+            FileReadAccessShare DomainSMBShare
+            {
+                Name   = $LogFolder
+                Path =  $LogPath
+                Account = $PSComputerAccount,$DPMPComputerAccount,$ClientComputerAccount
+                DependsOn = "[File]ShareFolder"
+            }
+
+            WriteConfigurationFile WriteDelegateControlfinished
+            {
+                Role = "DC"
+                LogPath = $LogPath
+                WriteNode = "DelegateControl"
+                Status = "Passed"
+                Ensure = "Present"
+                DependsOn = @("[DelegateControl]AddPS","[DelegateControl]AddDPMP")
+            }
+
+            WaitForExtendSchemaFile WaitForExtendSchemaFile
+            {
+                MachineName = $PSName
+                ExtFolder = $CM
+                Ensure = "Present"
+                DependsOn = "[WriteConfigurationFile]WriteDelegateControlfinished"
+            }
+        }
+        else {
+            VerifyComputerJoinDomain WaitForCS
+            {
+                ComputerName = $CSName
+                Ensure = "Present"
+                DependsOn = "[InstallCA]InstallCA"
+            }
+
+            File ShareFolder
+            {            
+                DestinationPath = $LogPath     
+                Type = 'Directory'            
+                Ensure = 'Present'
+                DependsOn = @("[VerifyComputerJoinDomain]WaitForCS","[VerifyComputerJoinDomain]WaitForPS","[VerifyComputerJoinDomain]WaitForDPMP","[VerifyComputerJoinDomain]WaitForClient")
+            }
+
+            FileReadAccessShare DomainSMBShare
+            {
+                Name   = $LogFolder
+                Path =  $LogPath
+                Account = $CSComputerAccount,$PSComputerAccount,$DPMPComputerAccount,$ClientComputerAccount
+                DependsOn = "[File]ShareFolder"
+            }
+            
+            WriteConfigurationFile WriteCSJoinDomain
+            {
+                Role = "DC"
+                LogPath = $LogPath
+                WriteNode = "CSJoinDomain"
+                Status = "Passed"
+                Ensure = "Present"
+                DependsOn = "[FileReadAccessShare]DomainSMBShare"
+            }
+
+            DelegateControl AddCS
+            {
+                Machine = $CSName
+                DomainFullName = $DomainName
+                Ensure = "Present"
+                DependsOn = "[WriteConfigurationFile]WriteCSJoinDomain"
+            }
+
+            WriteConfigurationFile WriteDelegateControlfinished
+            {
+                Role = "DC"
+                LogPath = $LogPath
+                WriteNode = "DelegateControl"
+                Status = "Passed"
+                Ensure = "Present"
+                DependsOn = @("[DelegateControl]AddCS","[DelegateControl]AddPS","[DelegateControl]AddDPMP")
+            }
+
+            WaitForExtendSchemaFile WaitForExtendSchemaFile
+            {
+                MachineName = $CSName
+                ExtFolder = $CM
+                Ensure = "Present"
+                DependsOn = "[WriteConfigurationFile]WriteDelegateControlfinished"
+            }
         }
 
         WriteConfigurationFile WritePSJoinDomain
@@ -124,7 +197,7 @@
             WriteNode = "PSJoinDomain"
             Status = "Passed"
             Ensure = "Present"
-            DependsOn = "[xSmbShare]DomainSMBShare"
+            DependsOn = "[FileReadAccessShare]DomainSMBShare"
         }
 
         WriteConfigurationFile WriteDPMPJoinDomain
@@ -134,7 +207,7 @@
             WriteNode = "DPMPJoinDomain"
             Status = "Passed"
             Ensure = "Present"
-            DependsOn = "[xSmbShare]DomainSMBShare"
+            DependsOn = "[FileReadAccessShare]DomainSMBShare"
         }
 
         WriteConfigurationFile WriteClientJoinDomain
@@ -144,7 +217,7 @@
             WriteNode = "ClientJoinDomain"
             Status = "Passed"
             Ensure = "Present"
-            DependsOn = "[xSmbShare]DomainSMBShare"
+            DependsOn = "[FileReadAccessShare]DomainSMBShare"
         }
 
         DelegateControl AddPS
@@ -161,24 +234,6 @@
             DomainFullName = $DomainName
             Ensure = "Present"
             DependsOn = "[WriteConfigurationFile]WriteDPMPJoinDomain"
-        }
-
-        WriteConfigurationFile WriteDelegateControlfinished
-        {
-            Role = "DC"
-            LogPath = $LogPath
-            WriteNode = "DelegateControl"
-            Status = "Passed"
-            Ensure = "Present"
-            DependsOn = @("[DelegateControl]AddPS","[DelegateControl]AddDPMP")
-        }
-
-        WaitForExtendSchemaFile WaitForExtendSchemaFile
-        {
-            MachineName = $PSName
-            ExtFolder = $CM
-            Ensure = "Present"
-            DependsOn = "[WriteConfigurationFile]WriteDelegateControlfinished"
         }
     }
 }

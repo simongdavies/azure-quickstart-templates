@@ -1,12 +1,15 @@
 # SQL Server Always On Availability Groups on AKS
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fazure-quickstart-templates%2Fmaster%2F201-aks-sql-server-always-on%2Fazuredeploy.json" target="_blank">
-    <img src="http://azuredeploy.net/deploybutton.png"/>
-</a>
+![Azure Public Test Date](https://azurequickstartsservice.blob.core.windows.net/badges/201-aks-sql-server-always-on/PublicLastTestDate.svg)
+![Azure Public Test Result](https://azurequickstartsservice.blob.core.windows.net/badges/201-aks-sql-server-always-on/PublicDeployment.svg)
 
-<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fazure-quickstart-templates%2Fmaster%2F201-aks-sql-server-always-on%2Fazuredeploy.json" target="_blank">
-    <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.png"/>
-</a>
+![Azure US Gov Last Test Date](https://azurequickstartsservice.blob.core.windows.net/badges/201-aks-sql-server-always-on/FairfaxLastTestDate.svg)
+![Azure US Gov Last Test Result](https://azurequickstartsservice.blob.core.windows.net/badges/201-aks-sql-server-always-on/FairfaxDeployment.svg)
+
+![Best Practice Check](https://azurequickstartsservice.blob.core.windows.net/badges/201-aks-sql-server-always-on/BestPracticeResult.svg)
+![Cred Scan Check](https://azurequickstartsservice.blob.core.windows.net/badges/201-aks-sql-server-always-on/CredScanResult.svg)
+
+[![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fazure-quickstart-templates%2Fmaster%2F201-aks-sql-server-always-on%2Fazuredeploy.json)  [![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fazure-quickstart-templates%2Fmaster%2F201-aks-sql-server-always-on%2Fazuredeploy.json)
 
 ## Overview
 
@@ -47,7 +50,6 @@ cnab_state_storage_account_key | The account key for the CNAB State storage acco
 cnab_state_storage_account_resource_group| The resource group for CNAB state storage account, use this to provide an existing storage account in a different resource group to the ACI Container Group
 containerGroupName | The name of the container group to create the container instance to run duffle in , by default a new Container Group will be created for each invocation (these can be safely deleted after deployment)
 containerName| The name of a container in the con◊tainer group to run the container image to run duffle, by default a new Container Name will be generated for each invocation
-
 
 
 

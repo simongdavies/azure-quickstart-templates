@@ -1,5 +1,5 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "location": {
@@ -134,29 +134,38 @@
         },
         "tags": {
             "type": "object",
-            "defaultValue": {},
+            "defaultValue": {
+            },
             "metadata": {
                 "description": "The collection of resource tags passed from parameters file"
             }
         },
         "aseSubnetServiceEndpoints": {
             "type": "array",
-            "defaultValue": [],
+            "defaultValue": [
+            ],
             "metadata": {
                 "description": "Service Endpoints enabled on the ASE subnet"
             }
         },
         "aseManagementIps": {
             "type": "array",
-            "defaultValue": [],
+            "defaultValue": [
+            ],
             "metadata": {
                 "description": "List of ASE management IP addresses"
+            }
+        },
+        "azureMonitorFQDNs": {
+            "type": "array",
+            "metadata": {
+                "description": "FQDNs to whitelist for Azure Monitor"
             }
         }
     },
     "variables": {
         "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetResourceName'), parameters('aseSubnetName'))]",
-        "nestedtemplateUri": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/vnet.json', parameters('_artifactsLocationSasToken')))]"
+        "nestedTemplateUri": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/vnet.json', parameters('_artifactsLocationSasToken')))]"
     },
     "resources": [
         {
@@ -214,13 +223,16 @@
                     },
                     "aseManagementIps": {
                         "value": "[parameters('aseManagementIps')]"
+                    },
+                    "azureMonitorFQDNs": {
+                        "value": "[parameters('azureMonitorFQDNs')]"
                     }
                 }
             }
         },
         {
             "type": "Microsoft.Web/hostingEnvironments",
-            "apiVersion": "2019-02-01",
+            "apiVersion": "2019-08-01",
             "name": "[parameters('aseName')]",
             "location": "[parameters('location')]",
             "kind": "ASEV2",
@@ -242,7 +254,7 @@
         },
         {
             "type": "Microsoft.web/serverfarms",
-            "apiVersion": "2018-02-01",
+            "apiVersion": "2019-08-01",
             "name": "[parameters('serverFarmsAseAspName')]",
             "location": "[parameters('location')]",
             "sku": {
@@ -267,7 +279,7 @@
         },
         {
             "type": "Microsoft.Web/sites",
-            "apiVersion": "2018-02-01",
+            "apiVersion": "2019-08-01",
             "name": "[parameters('applicationName')]",
             "location": "[parameters('location')]",
             "tags": {
@@ -296,7 +308,7 @@
         },
         {
             "type": "microsoft.insights/components",
-            "apiVersion": "2015-05-01",
+            "apiVersion": "2018-05-01-preview",
             "name": "[parameters('applicationName')]",
             "location": "[parameters('location')]",
             "tags": {

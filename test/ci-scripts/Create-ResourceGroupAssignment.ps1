@@ -5,15 +5,19 @@
 param(
     [string][Parameter(mandatory=$true)] $ResourceGroupName,
     [string][Parameter(mandatory=$true)] $Location,
-    [string][Parameter(mandatory=$true)] $appId,
-    [string][Parameter(mandatory=$true)] $objectId #TODO this is a workaround until we can figure out why Get-AzADSP failes and role assignment partially fails
+    [string][Parameter(mandatory=$true)] $appId
 )
 
-#Create the group only if it doesn't already exist
+# Create the group only if it doesn't already exist
 if ((Get-AzResourceGroup -Name $ResourceGroupName -Location $Location -Verbose -ErrorAction SilentlyContinue) -eq $null) {
     New-AzResourceGroup -Name $ResourceGroupName -Location $Location -Verbose -Force
 }
 
-#Note that the service principal assigning the role must have AAD perms to query AD for the objectId
-#New-AzRoleAssignment -ObjectId $(Get-AzADServicePrincipal -ApplicationId $appId).Id -RoleDefinitionName Contributor  -ResourceGroupName $ResourceGroupName -Verbose
-New-AzRoleAssignment -ObjectId $objectId -RoleDefinitionName Contributor  -ResourceGroupName $ResourceGroupName -Verbose
+# Replication may take a second or two
+if ((Get-AzResourceGroup -Name $ResourceGroupName -Location $Location -Verbose -ErrorAction SilentlyContinue) -eq $null) {
+    Start-Sleep 10
+}
+
+# Note that the service principal assigning the role must have AAD perms to query AD for the objectId
+# Owner is used on the ResourceGroup in order to delegate permissions to that group
+New-AzRoleAssignment -ObjectId $(Get-AzADServicePrincipal -ApplicationId $appId).Id -RoleDefinitionName Owner -ResourceGroupName $ResourceGroupName -Verbose
