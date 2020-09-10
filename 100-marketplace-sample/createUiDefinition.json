@@ -8,7 +8,7 @@
                 "name": "vmName",
                 "type": "Microsoft.Common.TextBox",
                 "label": "Virtual Machine name",
-                "toolTip": "The name of the Virtual Machine.",
+                "toolTip": "The updated name of the Virtual Machine.",
                 "defaultValue": "linux-vm",
                 "constraints": {
                     "required": true,
